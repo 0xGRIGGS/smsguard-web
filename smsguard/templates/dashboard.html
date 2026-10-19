@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — SMSGuard ES{% endblock %}
+{% block content %}
+<div class="row-between">
+  <h1>My devices</h1>
+  <a class="btn btn-primary" href="{{ url_for('devices.register') }}">Register device</a>
+</div>
+
+{% if devices %}
+  <div class="device-list">
+    {% for d in devices %}
+      <div class="card device-row">
+        <div class="device-info">
+          <strong>{{ d['model'] or ('IMEI ' ~ d['imei']) }}</strong>
+          <span class="badge badge-{{ d['status'] }}">{{ 'LOST' if d['status'] == 'lost' else 'Active' }}</span>
+          {% if d['unread'] %}
+            <span class="badge badge-new">{{ d['unread'] }} new message{{ '' if d['unread'] == 1 else 's' }}</span>
+          {% endif %}
+          <span class="muted">IMEI {{ d['imei'] }}</span>
+          {% if d['last_seen'] %}
+            <span class="muted">Last seen {{ ago(d['last_seen']) }}</span>
+          {% endif %}
+        </div>
+        <div class="device-actions">
+          <a class="btn btn-ghost" href="{{ url_for('devices.device_detail', device_id=d['id']) }}">Details</a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="panel">
+    <h2>No devices yet</h2>
+    <p>Register the IMEI of every phone you own so they can be verified and recovered if lost.</p>
+    <p class="muted">Find your IMEI by dialing <code>*#06#</code> or in Settings &rarr; About phone.</p>
+    <a class="btn btn-primary" href="{{ url_for('devices.register') }}">Register your first device</a>
+  </div>
+{% endif %}
+{% endblock %}

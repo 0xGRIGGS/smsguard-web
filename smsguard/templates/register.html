@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Register device — SMSGuard ES{% endblock %}
+{% block content %}
+<form class="panel" method="post" action="{{ url_for('devices.register') }}">
+  <h1>Register a device</h1>
+  <input type="hidden" name="{{ '_csrf_token' }}" value="{{ csrf_token() }}">
+  <p class="muted">Find your IMEI by dialing <code>*#06#</code> or in Settings &rarr; About phone. The IMEI is validated for a correct check digit.</p>
+  <label>IMEI (15 digits)
+    <input name="imei" type="text" pattern="\d{15}" maxlength="15" inputmode="numeric" required placeholder="354940123456789">
+  </label>
+  <label>Model <span class="muted">(optional)</span>
+    <input name="model" type="text" maxlength="60" placeholder="e.g. Pixel 8">
+  </label>
+  <label>Color <span class="muted">(optional)</span>
+    <input name="color" type="text" maxlength="30" placeholder="e.g. Obsidian">
+  </label>
+  <label>Notes <span class="muted">(optional)</span>
+    <textarea name="notes" maxlength="300" rows="2" placeholder="Any identifying marks, case, etc."></textarea>
+  </label>
+  <button class="btn btn-primary" type="submit">Register device</button>
+</form>
+{% endblock %}

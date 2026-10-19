@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>{% block title %}SMSGuard ES{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('index') }}">
+      <span class="brand-mark">S</span>
+      <span>SMSGuard <em>ES</em></span>
+    </a>
+    <nav>
+      {% if session.user_id %}
+        <a href="{{ url_for('devices.dashboard') }}">
+          Dashboard{% if unread_total %} <span class="nav-badge">{{ unread_total }}</span>{% endif %}
+        </a>
+        <a href="{{ url_for('devices.register') }}">Register Device</a>
+        <a href="{{ url_for('auth.account') }}">Account</a>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-ghost">Logout</a>
+      {% else %}
+        <a href="{{ url_for('auth.login') }}">Login</a>
+        <a href="{{ url_for('auth.signup') }}" class="btn btn-primary">Sign up</a>
+      {% endif %}
+    </nav>
+  </header>
+
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flashes">
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    SMSGuard ES &middot; SMS-based device recovery
+  </footer>
+</body>
+</html>

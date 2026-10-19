@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}SMSGuard ES{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>Register your phone now.<br>Recover it anywhere.</h1>
+  <p>Onboarding makes your device easy to verify.</p>
+  <div class="hero-actions">
+    <a href="{{ url_for('auth.signup') }}" class="btn btn-primary btn-lg">Create your account</a>
+    <a href="{{ url_for('recovery.recovery_page', imei='your-imei') }}" class="btn btn-ghost btn-lg">Found a device?</a>
+  </div>
+</section>
+
+<section class="cards">
+  <div class="card">
+    <h3>1. Register</h3>
+    <p>Add your phone's IMEI when you first get it. It takes one minute.</p>
+  </div>
+  <div class="card">
+    <h3>2. Flag as lost</h3>
+    <p>If it goes missing, mark it lost from your dashboard. The app can sound an alarm on command.</p>
+  </div>
+  <div class="card">
+    <h3>3. Recover</h3>
+    <p>Whoever finds it scans <code>*#06#</code>, opens your recovery link, and can reach you privately.</p>
+  </div>
+</section>
+{% endblock %}

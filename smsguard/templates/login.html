@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Log in — SMSGuard ES{% endblock %}
+{% block content %}
+<form class="panel" method="post" action="{{ url_for('auth.login') }}">
+  <h1>Log in</h1>
+  <input type="hidden" name="{{ '_csrf_token' }}" value="{{ csrf_token() }}">
+  <label>Email
+    <input name="email" type="email" autocomplete="email" required>
+  </label>
+  <label>Password
+    <input name="password" type="password" autocomplete="current-password" required>
+  </label>
+  <button class="btn btn-primary" type="submit">Log in</button>
+  <p class="muted">New here? <a href="{{ url_for('auth.signup') }}">Create an account</a></p>
+</form>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Recovery — SMSGuard ES{% endblock %}
+{% block content %}
+{% if found %}
+  <div class="panel recovery-panel">
+    <h1>This device was reported lost</h1>
+    <p>
+      {% if device['color'] %}({{ device['color'] }}) {% endif %}{{ device['model'] or 'Smartphone' }}
+    </p>
+    <p>If you found this phone, please contact the owner using the form below. Your details will only be sent to the owner.</p>
+
+    <form method="post" action="{{ url_for('recovery.contact_owner', imei=imei) }}">
+      <input type="hidden" name="{{ '_csrf_token' }}" value="{{ csrf_token() }}">
+      <label>Your name
+        <input name="from_name" type="text" maxlength="80" required>
+      </label>
+      <label>Phone number to be reached at <span class="muted">(optional)</span>
+        <input name="from_phone" type="text" maxlength="30">
+      </label>
+      <label>Message
+        <textarea name="message" rows="3" maxlength="1000" required placeholder="e.g. I found this phone at ..."></textarea>
+      </label>
+      <button class="btn btn-primary" type="submit">Send to owner</button>
+    </form>
+  </div>
+{% else %}
+  <div class="panel recovery-panel">
+    <h1>No report found</h1>
+    <p>The IMEI you entered is not matched with any lost device report.</p>
+    <p class="muted">IMEIs are only exposed publicly when their owner has flagged the device as lost.</p>
+  </div>
+{% endif %}
+{% endblock %}

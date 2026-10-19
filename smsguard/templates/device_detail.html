@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}{{ device['model'] or device['imei'] }} — SMSGuard ES{% endblock %}
+{% block content %}
+<div class="row-between">
+  <h1>{{ device['model'] or ('IMEI ' ~ device['imei']) }}</h1>
+  <span class="badge badge-{{ device['status'] }}">{{ 'LOST' if device['status'] == 'lost' else 'Active' }}</span>
+</div>
+
+<div class="cards">
+  <div class="card">
+    <h3>Status</h3>
+    {% if device['status'] == 'lost' %}
+      <p>This device was flagged lost. The recovery link is live and an alarm command is pending on the app.</p>
+      <form method="post" action="{{ url_for('devices.mark_found', device_id=device['id']) }}">
+        <input type="hidden" name="{{ '_csrf_token' }}" value="{{ csrf_token() }}">
+        <button class="btn btn-primary" type="submit">Mark as found</button>
+      </form>
+    {% else %}
+      <form method="post" action="{{ url_for('devices.mark_lost', device_id=device['id']) }}">
+        <input type="hidden" name="{{ '_csrf_token' }}" value="{{ csrf_token() }}">
+        <button class="btn btn-danger" type="submit">Flag as lost</button>
+      </form>
+    {% endif %}
+    <form method="post" action="{{ url_for('devices.delete_device', device_id=device['id']) }}"
+          onsubmit="return confirm('Remove this device permanently?')">
+      <input type="hidden" name="{{ '_csrf_token' }}" value="{{ csrf_token() }}">
+      <button class="btn btn-ghost danger-text" type="submit">Remove device</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Telemetry</h3>
+    <p><strong>Last seen:</strong> {{ device['last_seen'] or 'never' }}</p>
+    <p><strong>Battery:</strong>
+      {% if device['last_battery'] is not none %}{{ device['last_battery'] }}%{% else %}unknown{% endif %}
+    </p>
+    <p><strong>Location:</strong>
+      {% if device['last_lat'] is not none %}
+        <a href="https://www.google.com/maps?q={{ device['last_lat'] }},{{ device['last_lon'] }}"
+           target="_blank" rel="noopener">{{ '{:.5f}'.format(device['last_lat']) }}, {{ '{:.5f}'.format(device['last_lon']) }}</a>
+      {% else %}unknown{% endif %}
+    </p>
+  </div>
+
+  <div class="card">
+    <h3>Remote actions</h3>
+    {% if device['pending_action'] %}
+      <p>Pending on the app: <span class="badge badge-new">{{ device['pending_action'] }}</span></p>
+      <p class="muted">It runs the next time the phone checks in. You can queue a different one below.</p>
+    {% else %}
+      <p class="muted">Queue a command for the app. It runs the next time the phone checks in.</p>
+    {% endif %}
+    <div class="actions-row">
+      <form method="post" action="{{ url_for('devices.request_action', device_id=device['id'], action='locate') }}">
+        <input type="hidden" name="{{ '_csrf_token' }}" value="{{ csrf_token() }}">
+        <button class="btn btn-ghost" type="submit">Request location</button>
+      </form>
+      <form method="post" action="{{ url_for('devices.request_action', device_id=device['id'], action='alarm') }}">
+        <input type="hidden" name="{{ '_csrf_token' }}" value="{{ csrf_token() }}">
+        <button class="btn btn-ghost" type="submit">Sound alarm</button>
+      </form>
+      <form method="post" action="{{ url_for('devices.request_action', device_id=device['id'], action='lock') }}">
+        <input type="hidden" name="{{ '_csrf_token' }}" value="{{ csrf_token() }}">
+        <button class="btn btn-ghost" type="submit">Lock device</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>App access</h3>
+    <p class="muted">Put the recovery link and device key in the SMSGuard ES Android app.</p>
+    <p><strong>Recovery link:</strong>
+      <a href="{{ url_for('recovery.recovery_page', imei=device['imei'], _external=True) }}" target="_blank" rel="noopener">
+        {{ url_for('recovery.recovery_page', imei=device['imei'], _external=True) }}
+      </a>
+    </p>
+    <p><strong>Device key:</strong> <code>{{ device['device_key'] }}</code></p>
+  </div>
+</div>
+
+<div class="cards">
+  <div class="card">
+    <h3>Location trail</h3>
+    {% if locations %}
+      <ul class="log">
+        {% for loc in locations %}
+          <li>
+            <span class="muted">{{ ago(loc['created_at']) }}</span>
+            <a href="https://www.google.com/maps?q={{ loc['lat'] }},{{ loc['lon'] }}" target="_blank" rel="noopener">
+              {{ '{:.5f}'.format(loc['lat']) }}, {{ '{:.5f}'.format(loc['lon']) }}
+            </a>
+            {% if loc['battery'] is not none %}<span class="muted">&middot; {{ loc['battery'] }}%</span>{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">No location reports yet. The trail fills in as the app checks in.</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h3>Activity</h3>
+    <ul class="log">
+      {% for e in events %}
+        <li><span class="muted">{{ ago(e['created_at']) }}</span> {{ e['type'] }} &mdash; {{ e['detail'] }}</li>
+      {% else %}
+        <li class="muted">No activity yet.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<div class="cards">
+  <div class="card">
+    <h3>Finder messages</h3>
+    {% if messages %}
+      <ul class="log">
+        {% for m in messages %}
+          <li>
+            <span class="muted">{{ ago(m['created_at']) }} &middot; {{ m['from_name'] }}{% if m['from_phone'] %} &middot; {{ m['from_phone'] }}{% endif %}</span>
+            {% if m['id'] in unread_ids %}<span class="badge badge-new">NEW</span>{% endif %}
+            <div>{{ m['message'] }}</div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">Nobody has contacted you about this device yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
